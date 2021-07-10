@@ -1,46 +1,52 @@
 import 'package:flutter/material.dart';
-
+import 'package:provider/provider.dart';
+import 'package:shop_app/providers/product.dart';
 import 'package:shop_app/screens/product_detail_screen.dart';
 
 class ProductItem extends StatelessWidget {
-  final String imageUrl;
-  final String title;
-  final String id;
-
-  ProductItem({required this.id, required this.title, required this.imageUrl})
-      : super(key: Key(id));
-
   @override
-  Widget build(BuildContext context) => ClipRRect(
-        borderRadius: BorderRadius.circular(10),
-        child: GridTile(
-          child: GestureDetector(
-            child: Image.network(
-              imageUrl,
-              fit: BoxFit.cover,
-            ),
-            onTap: () {
-              Navigator.of(context)
-                  .pushNamed(ProductDetailScreen.routeName, arguments: id);
-            },
+  Widget build(BuildContext context) {
+    ///alternative syntax
+    final product = Provider.of<Product>(context, listen: false);
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(10),
+      child: GridTile(
+        child: GestureDetector(
+          child: Image.network(
+            product.url,
+            fit: BoxFit.cover,
           ),
-          footer: GridTileBar(
-            leading: IconButton(
-              icon: Icon(Icons.favorite),
-              onPressed: () => null,
-              color: Theme.of(context).accentColor,
-            ),
-            title: Text(
-              title,
-              textAlign: TextAlign.center,
-            ),
-            trailing: IconButton(
-              icon: Icon(Icons.shopping_cart),
-              onPressed: () => null,
-              color: Theme.of(context).accentColor,
-            ),
-            backgroundColor: Colors.black87,
-          ),
+          onTap: () {
+            Navigator.of(context).pushNamed(ProductDetailScreen.routeName,
+                arguments: product.id);
+          },
         ),
-      );
+        footer: GridTileBar(
+          ///можно оборачивать только часть виджетов в консюмеров, чтобы избежать
+          ///перерендера всего дерева
+          leading: Consumer<Product>(
+            builder: (ctx, product, child) => IconButton(
+              icon: Icon(
+                  product.isFavorite ? Icons.favorite : Icons.favorite_outline),
+              onPressed: () => product.toggleFavoriteStatus(),
+              color: Theme.of(context).accentColor,
+            ),
+
+            ///child argument for those part, that shouldn't update
+            // child: Text('Never rerenders!!!'),
+          ),
+          title: Text(
+            product.title,
+            textAlign: TextAlign.center,
+          ),
+          trailing: IconButton(
+            icon: Icon(Icons.shopping_cart),
+            onPressed: () => null,
+            color: Theme.of(context).accentColor,
+          ),
+          backgroundColor: Colors.black87,
+        ),
+      ),
+    );
+  }
 }
