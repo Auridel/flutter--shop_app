@@ -6,15 +6,12 @@ class ProductItem extends StatelessWidget {
   final String imageUrl;
   final String title;
   final String id;
-  final double price;
 
-  ProductItem(
-      {required this.id, required this.title, required this.imageUrl, required this.price})
+  ProductItem({required this.id, required this.title, required this.imageUrl})
       : super(key: Key(id));
 
   @override
-  Widget build(BuildContext context) =>
-      ClipRRect(
+  Widget build(BuildContext context) => ClipRRect(
         borderRadius: BorderRadius.circular(10),
         child: GridTile(
           child: GestureDetector(
@@ -23,18 +20,15 @@ class ProductItem extends StatelessWidget {
               fit: BoxFit.cover,
             ),
             onTap: () {
-              Navigator.of(context).push(
-                  MaterialPageRoute(builder: (ctx) => ProductDetailScreen(title: title,)));
+              Navigator.of(context)
+                  .pushNamed(ProductDetailScreen.routeName, arguments: id);
             },
           ),
-          header: Text(price.toString()),
           footer: GridTileBar(
             leading: IconButton(
               icon: Icon(Icons.favorite),
               onPressed: () => null,
-              color: Theme
-                  .of(context)
-                  .accentColor,
+              color: Theme.of(context).accentColor,
             ),
             title: Text(
               title,
@@ -43,9 +37,7 @@ class ProductItem extends StatelessWidget {
             trailing: IconButton(
               icon: Icon(Icons.shopping_cart),
               onPressed: () => null,
-              color: Theme
-                  .of(context)
-                  .accentColor,
+              color: Theme.of(context).accentColor,
             ),
             backgroundColor: Colors.black87,
           ),
