@@ -33,25 +33,31 @@ class Products with ChangeNotifier {
         'https://previews.123rf.com/images/vitalily73/vitalily731704/vitalily73170400185/76635632-woman-hat-isolated-on-white-background-women-s-beach-hat-colorful-hat-yellow-hat-.jpg')
   ];
 
-  var _showFavoritesOnly = false;
+  // var _showFavoritesOnly = false;
 
   List<Product> get items {
-    if(_showFavoritesOnly) {
-      return _items.where((element) => element.isFavorite).toList();
-    }
+    // if(_showFavoritesOnly) {
+    //   return _items.where((element) => element.isFavorite).toList();
+    // }
     return [..._items];
   }
-  /// проблема такой реализации - при переходе на другой экран, который использует
-  /// эти же данные фильтры останутся применены
-  void showFavoritesOnly() {
-    _showFavoritesOnly = true;
-    notifyListeners();
+
+  List<Product> get favorite {
+    return _items.where((element) => element.isFavorite).toList();
   }
 
-  void showAll() {
-    _showFavoritesOnly = false;
-    notifyListeners();
-  }
+
+  /// проблема такой реализации - при переходе на другой экран, который использует
+  /// эти же данные фильтры останутся применены
+  // void showFavoritesOnly() {
+  //   _showFavoritesOnly = true;
+  //   notifyListeners();
+  // }
+  //
+  // void showAll() {
+  //   _showFavoritesOnly = false;
+  //   notifyListeners();
+  // }
 
   Product findById(String id) {
     return _items.firstWhere((element) => element.id == id);
