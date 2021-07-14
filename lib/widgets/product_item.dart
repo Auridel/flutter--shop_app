@@ -33,6 +33,7 @@ class ProductItem extends StatelessWidget {
               onPressed: () => product.toggleFavoriteStatus(),
               color: Theme.of(context).accentColor,
             ),
+
             ///child argument for those part, that shouldn't update
             // child: Text('Never rerenders!!!'),
           ),
@@ -44,6 +45,17 @@ class ProductItem extends StatelessWidget {
             icon: Icon(Icons.shopping_cart),
             onPressed: () {
               cart.addItem(product.id, product.price, product.title);
+              ScaffoldMessenger.of(context).removeCurrentSnackBar();
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: Text('Added item to cart!'),
+                duration: Duration(seconds: 2),
+                action: SnackBarAction(
+                  label: 'UNDO',
+                  onPressed: () {
+                    cart.removeSingleItem(product.id);
+                  },
+                ),
+              ));
             },
             color: Theme.of(context).accentColor,
           ),
