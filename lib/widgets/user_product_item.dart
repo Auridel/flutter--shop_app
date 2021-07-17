@@ -8,7 +8,9 @@ class UserProductItem extends StatelessWidget {
   final String title;
   final String imageUrl;
 
-  UserProductItem(this.id, this.title, this.imageUrl);
+  final Function showSnackBar;
+
+  UserProductItem(this.id, this.title, this.imageUrl, this.showSnackBar);
 
   @override
   Widget build(BuildContext context) {
@@ -24,14 +26,20 @@ class UserProductItem extends StatelessWidget {
           children: [
             IconButton(
               onPressed: () {
-                Navigator.of(context).pushNamed(EditProductScreen.routeName, arguments: id);
+                Navigator.of(context)
+                    .pushNamed(EditProductScreen.routeName, arguments: id);
               },
               icon: Icon(Icons.edit),
               color: Theme.of(context).primaryColor,
             ),
             IconButton(
-              onPressed: () {
-                Provider.of<Products>(context, listen: false).deleteProduct(id);
+              onPressed: () async {
+                try {
+                  await Provider.of<Products>(context, listen: false)
+                      .deleteProduct(id);
+                } catch (e) {
+                  showSnackBar('Deleting failed!');
+                }
               },
               icon: Icon(Icons.delete),
               color: Theme.of(context).errorColor,

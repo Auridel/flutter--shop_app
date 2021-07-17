@@ -1,39 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:shop_app/models/http_exception.dart';
 import 'product.dart';
 import 'dart:convert';
 
 //with - mixin
 class Products with ChangeNotifier {
-  List<Product> _items = [
-    Product(
-        id: "p1",
-        title: 'Red shirt',
-        description: 'It\'s a red!',
-        price: 29.99,
-        url:
-            'https://imgprd19.hobbylobby.com/5/ba/61/5ba610f22c7cd6efb4e6c69387d938451a6c40e6/700Wx700H-633719-0320.jpg'),
-    Product(
-        id: 'p2',
-        title: 'White Dress',
-        description: 'It\'s a white!',
-        price: 49.99,
-        url:
-            'https://assets.vogue.com/photos/6070c580f6400d6eae7735a5/1:1/w_1013,h_1013,c_limit/slide_.jpg'),
-    Product(
-        id: 'p3',
-        title: 'Green jeans',
-        description: 'It\'s a green!',
-        price: 15.99,
-        url: 'https://kosmo-shop.com/23075/-aesthetic-green-jeans.jpg'),
-    Product(
-        id: 'p4',
-        title: 'Yellow hat',
-        description: 'It\'s a yellow!',
-        price: 5.99,
-        url:
-            'https://previews.123rf.com/images/vitalily73/vitalily731704/vitalily73170400185/76635632-woman-hat-isolated-on-white-background-women-s-beach-hat-colorful-hat-yellow-hat-.jpg')
-  ];
+  final baseUrl = 'https://flutter-shop-app-86f4f-default-rtdb.europe-west1.firebasedatabase.app/';
+  List<Product> _items = [];
 
   // var _showFavoritesOnly = false;
 
@@ -64,9 +38,30 @@ class Products with ChangeNotifier {
     return _items.firstWhere((element) => element.id == id);
   }
 
+  Future<void> fetchAndSetProducts() async {
+    final url = baseUrl + 'products.json';
+    try {
+      final res = await http.get(Uri.parse(url));
+      final Map<String, dynamic> extractedData = json.decode(res.body);
+      final List<Product> loadedProducts = [];
+      extractedData.forEach((prodId, prodData) {
+        loadedProducts.add(Product(id: prodId,
+            title: prodData['title'],
+            description: prodData['description'],
+            price: prodData['price'],
+            url: prodData['imageUrl'],
+            isFavorite: prodData['isFavorite']
+        ));
+      });
+      _items = loadedProducts;
+      notifyListeners();
+    } catch (e) {
+      throw e;
+    }
+  }
+
   Future<void> addProduct(Product product) async {
-    const url =
-        'https://flutter-shop-app-86f4f-default-rtdb.europe-west1.firebasedatabase.app/products.json';
+    final url = baseUrl + 'products.json';
     try {
       final res = await http.post(Uri.parse(url),
           body: json.encode({
@@ -77,6 +72,7 @@ class Products with ChangeNotifier {
             'isFavorite': product.isFavorite,
           }));
 
+      ///необходимо указать тип во избежание ошибок
       ///допускается также применение as Map<String, dynamic>
       final Map<String, dynamic> data = jsonDecode(res.body);
       final newProduct = Product(
@@ -87,22 +83,49 @@ class Products with ChangeNotifier {
           url: product.url);
       _items.add(newProduct);
       notifyListeners();
-    } catch(e) {
+    } catch (e) {
       print(e);
       throw e;
     }
   }
 
-  void updateProduct(String id, Product newProduct) {
+  Future<void> updateProduct(String id, Product newProduct) async {
     final idx = _items.indexWhere((element) => element.id == id);
     if (idx > -1) {
-      _items[idx] = newProduct;
-      notifyListeners();
+      try {
+        final url = '${baseUrl}products/$id.json';
+        final  res = await http.patch(Uri.parse(url), body: json.encode({
+          'title': newProduct.title,
+          'description': newProduct.description,
+          'imageUrl': newProduct.url,
+          'price': newProduct.price,
+        }));
+        if(res.statusCode >= 400) {
+          throw HttpException('Could not update product');
+        }
+        _items[idx] = newProduct;
+        notifyListeners();
+      } catch (e) {
+        throw e;
+      }
     }
   }
 
-  void deleteProduct(String id) {
-    _items.removeWhere((element) => element.id == id);
+  Future<void> deleteProduct(String id) async {
+    final url = '${baseUrl}products/$id.json';
+    final existingProductIndex = _items.indexWhere((element) => element.id == id);
+    dynamic existingProduct = _items[existingProductIndex];
+    ///remove from the list, but not from the memory
+    ///because someone is still interesting with this object
+    _items.removeAt(existingProductIndex);
     notifyListeners();
+    final res = await http.delete(Uri.parse(url));
+    if(res.statusCode >= 400) {
+      _items.insert(existingProductIndex, existingProduct);
+      notifyListeners();
+      throw HttpException('Could not delete product');
+    }
+    ///clear the memory
+    existingProduct = null;
   }
 }

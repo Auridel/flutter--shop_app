@@ -8,8 +8,18 @@ import 'package:shop_app/widgets/user_product_item.dart';
 class UserProductsScreen extends StatelessWidget {
   static const routeName = '/user-products';
 
+  Future<void> _refreshProducts(BuildContext context) async {
+    await Provider.of<Products>(context, listen: false).fetchAndSetProducts();
+  }
+
+
   @override
   Widget build(BuildContext context) {
+    void _showSnackBar(String message) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(message, textAlign: TextAlign.center,)));
+    }
+
     final productsData = Provider.of<Products>(context);
     return Scaffold(
       appBar: AppBar(
@@ -21,16 +31,20 @@ class UserProductsScreen extends StatelessWidget {
         ],
       ),
       drawer: AppDrawer(),
-      body: Padding(
-        padding: const EdgeInsets.all(8),
-        child: ListView.builder(
-          itemCount: productsData.items.length,
-          itemBuilder: (_, i) => Column(
-            children: [
-              UserProductItem(productsData.items[i].id,
-                  productsData.items[i].title, productsData.items[i].url),
-              Divider(),
-            ],
+      body: RefreshIndicator(
+        ///must returns Future
+        onRefresh: () => _refreshProducts(context),
+        child: Padding(
+          padding: const EdgeInsets.all(8),
+          child: ListView.builder(
+            itemCount: productsData.items.length,
+            itemBuilder: (_, i) => Column(
+              children: [
+                UserProductItem(productsData.items[i].id,
+                    productsData.items[i].title, productsData.items[i].url, _showSnackBar),
+                Divider(),
+              ],
+            ),
           ),
         ),
       ),
