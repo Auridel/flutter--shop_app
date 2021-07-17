@@ -64,19 +64,19 @@ class Products with ChangeNotifier {
     return _items.firstWhere((element) => element.id == id);
   }
 
-  Future<void> addProduct(Product product) {
+  Future<void> addProduct(Product product) async {
     const url =
         'https://flutter-shop-app-86f4f-default-rtdb.europe-west1.firebasedatabase.app/products.json';
-    return http
-        .post(Uri.parse(url),
-            body: json.encode({
-              'title': product.title,
-              'description': product.description,
-              'imageUrl': product.url,
-              'price': product.price,
-              'isFavorite': product.isFavorite,
-            }))
-        .then((res) {
+    try {
+      final res = await http.post(Uri.parse(url),
+          body: json.encode({
+            'title': product.title,
+            'description': product.description,
+            'imageUrl': product.url,
+            'price': product.price,
+            'isFavorite': product.isFavorite,
+          }));
+
       ///допускается также применение as Map<String, dynamic>
       final Map<String, dynamic> data = jsonDecode(res.body);
       final newProduct = Product(
@@ -86,14 +86,11 @@ class Products with ChangeNotifier {
           price: product.price,
           url: product.url);
       _items.add(newProduct);
-
-      ///at the start of the list
-      // _items.insert(0, product);
       notifyListeners();
-    }).catchError((err) {
-      print(err);
-      throw err;
-    });
+    } catch(e) {
+      print(e);
+      throw e;
+    }
   }
 
   void updateProduct(String id, Product newProduct) {
