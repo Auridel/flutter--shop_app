@@ -4,7 +4,6 @@ import 'package:shop_app/models/http_exception.dart';
 import 'package:shop_app/providers/auth.dart';
 import 'package:shop_app/screens/auth_screen.dart';
 import 'package:shop_app/helpers/error_helper.dart' as errorHelper;
-import 'package:shop_app/screens/product_overview_screen.dart';
 
 class AuthCard extends StatefulWidget {
   const AuthCard({Key? key}) : super(key: key);
@@ -51,7 +50,6 @@ class _AuthCardState extends State<AuthCard> {
         await Provider.of<Auth>(context, listen: false)
             .signUp(_authData['email'] ?? '', _authData['password'] ?? '');
       }
-      Navigator.of(context).pushReplacementNamed(ProductOverviewScreen.routeName);
     } on HttpException catch (e) {
       print(e.toString());
       final errorMessage = errorHelper.getErrorMessage(e);

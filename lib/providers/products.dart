@@ -7,14 +7,13 @@ import 'dart:convert';
 //with - mixin
 class Products with ChangeNotifier {
   final baseUrl = 'https://flutter-shop-app-86f4f-default-rtdb.europe-west1.firebasedatabase.app/';
+  final String authToken;
+
+  Products(this.authToken, this._items);
+
   List<Product> _items = [];
 
-  // var _showFavoritesOnly = false;
-
   List<Product> get items {
-    // if(_showFavoritesOnly) {
-    //   return _items.where((element) => element.isFavorite).toList();
-    // }
     return [..._items];
   }
 
@@ -22,24 +21,12 @@ class Products with ChangeNotifier {
     return _items.where((element) => element.isFavorite).toList();
   }
 
-  /// проблема такой реализации - при переходе на другой экран, который использует
-  /// эти же данные фильтры останутся применены
-  // void showFavoritesOnly() {
-  //   _showFavoritesOnly = true;
-  //   notifyListeners();
-  // }
-  //
-  // void showAll() {
-  //   _showFavoritesOnly = false;
-  //   notifyListeners();
-  // }
-
   Product findById(String id) {
     return _items.firstWhere((element) => element.id == id);
   }
 
   Future<void> fetchAndSetProducts() async {
-    final url = baseUrl + 'products.json';
+    final url = baseUrl + 'products.json?auth=$authToken';
     try {
       final res = await http.get(Uri.parse(url));
       final Map<String, dynamic> extractedData = json.decode(res.body);
@@ -61,7 +48,7 @@ class Products with ChangeNotifier {
   }
 
   Future<void> addProduct(Product product) async {
-    final url = baseUrl + 'products.json';
+    final url = baseUrl + 'products.json?auth=$authToken';
     try {
       final res = await http.post(Uri.parse(url),
           body: json.encode({
@@ -112,7 +99,7 @@ class Products with ChangeNotifier {
   }
 
   Future<void> deleteProduct(String id) async {
-    final url = '${baseUrl}products/$id.json';
+    final url = '${baseUrl}products/$id.json?auth=$authToken';
     final existingProductIndex = _items.indexWhere((element) => element.id == id);
     dynamic existingProduct = _items[existingProductIndex];
     ///remove from the list, but not from the memory
