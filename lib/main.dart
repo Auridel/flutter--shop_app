@@ -10,6 +10,7 @@ import 'package:shop_app/screens/orders_screen.dart';
 import 'package:shop_app/screens/product_detail_screen.dart';
 import 'package:shop_app/screens/product_overview_screen.dart';
 import 'package:shop_app/providers/products.dart';
+import 'package:shop_app/screens/splash_screen.dart';
 import 'package:shop_app/screens/user_products_screen.dart';
 
 void main() {
@@ -23,15 +24,18 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider.value(value: Auth()),
+
         ///here we can pass a value from previous provider
         ChangeNotifierProxyProvider<Auth, Products>(
-          update: (ctx, auth, prevProducts) => Products(auth.token ?? '', prevProducts?.items ?? [], auth.userId),
+          update: (ctx, auth, prevProducts) => Products(
+              auth.token ?? '', prevProducts?.items ?? [], auth.userId),
           create: (ctx) => Products('', [], ''),
         ),
         ChangeNotifierProvider.value(value: Cart()),
         ChangeNotifierProxyProvider<Auth, Orders>(
-          update: (_, auth, prevOrders) => Orders(auth.token ?? '', prevOrders?.orders ?? []),
-          create: (_) => Orders('', []),
+          update: (_, auth, prevOrders) =>
+              Orders(auth.token ?? '', prevOrders?.orders ?? [], auth.userId),
+          create: (_) => Orders('', [], ''),
         ),
       ],
       child: Consumer<Auth>(
@@ -43,7 +47,14 @@ class MyApp extends StatelessWidget {
             fontFamily: 'Lato',
             materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
           ),
-          home: auth.isAuth ? ProductOverviewScreen() : AuthScreen(),
+          home: auth.isAuth
+              ? ProductOverviewScreen()
+              : FutureBuilder(
+                  future: auth.tryAutologin(),
+                  builder: (ctx, snapshot) =>
+                      snapshot.connectionState == ConnectionState.waiting
+                          ? SplashScreen()
+                          : AuthScreen()),
           routes: {
             ProductOverviewScreen.routeName: (ctx) => ProductOverviewScreen(),
             ProductDetailScreen.routeName: (ctx) => ProductDetailScreen(),
