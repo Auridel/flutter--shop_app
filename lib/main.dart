@@ -25,8 +25,8 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider.value(value: Auth()),
         ///here we can pass a value from previous provider
         ChangeNotifierProxyProvider<Auth, Products>(
-          update: (ctx, auth, prevProducts) => Products(auth.token ?? '', prevProducts?.items ?? []),
-          create: (ctx) => Products('', []),
+          update: (ctx, auth, prevProducts) => Products(auth.token ?? '', prevProducts?.items ?? [], auth.userId),
+          create: (ctx) => Products('', [], ''),
         ),
         ChangeNotifierProvider.value(value: Cart()),
         ChangeNotifierProxyProvider<Auth, Orders>(

@@ -12,6 +12,7 @@ class ProductItem extends StatelessWidget {
     final product = Provider.of<Product>(context, listen: false);
     final cart = Provider.of<Cart>(context, listen: false);
     final authToken = Provider.of<Auth>(context, listen: false).token ?? '';
+    final userId = Provider.of<Auth>(context, listen: false).userId;
     return ClipRRect(
       borderRadius: BorderRadius.circular(10),
       child: GridTile(
@@ -34,7 +35,7 @@ class ProductItem extends StatelessWidget {
                   product.isFavorite ? Icons.favorite : Icons.favorite_outline),
               onPressed: () async {
                 try {
-                  await product.toggleFavoriteStatus(authToken);
+                  await product.toggleFavoriteStatus(authToken, userId);
                 } catch (e) {
                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                     content: Text(
