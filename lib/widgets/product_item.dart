@@ -17,9 +17,16 @@ class ProductItem extends StatelessWidget {
       borderRadius: BorderRadius.circular(10),
       child: GridTile(
         child: GestureDetector(
-          child: Image.network(
-            product.url,
-            fit: BoxFit.cover,
+          ///scales image on switch between the screens
+          ///image on the other screen must be wrapped too
+          ///with the same unic tag
+          child: Hero(
+            tag: product.id,
+            child: FadeInImage(
+              placeholder: AssetImage('assets/images/tshirt.jpg'),
+              image: NetworkImage(product.url),
+              fit: BoxFit.cover,
+            ),
           ),
           onTap: () {
             Navigator.of(context).pushNamed(ProductDetailScreen.routeName,
